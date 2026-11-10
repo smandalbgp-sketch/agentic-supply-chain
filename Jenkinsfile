@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         APP_NAME        = 'agentic-supply-chain'
-        DOCKER_REPO     = 'your-dockerhub-username/agentic-supply-chain'
+        DOCKER_REPO     = 'engrsharvan1/agentic-supply-chain'
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
         DOCKER_CREDS_ID = 'dockerhub-creds'
         KUBECONFIG_ID   = 'kubeconfig'
