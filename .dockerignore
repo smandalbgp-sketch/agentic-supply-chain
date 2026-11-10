@@ -1,0 +1,8 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+k8s/
+*.md
+*.postman_collection.json

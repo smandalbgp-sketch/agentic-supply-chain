@@ -1,0 +1,7 @@
+# Run without MySQL (data is lost on restart; Kafka is still required):
+#   mvn spring-boot:run -Dspring-boot.run.profiles=h2
+spring:
+  datasource:
+    url: jdbc:h2:mem:supplychain;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""

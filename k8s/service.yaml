@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentic-supply-chain
+  namespace: supply-chain
+  labels:
+    app: agentic-supply-chain
+spec:
+  type: ClusterIP
+  selector:
+    app: agentic-supply-chain
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

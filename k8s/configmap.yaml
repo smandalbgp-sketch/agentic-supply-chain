@@ -1,0 +1,12 @@
+# Non-secret settings. Edit the hostnames to match your Kafka and MySQL.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supply-chain-config
+  namespace: supply-chain
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"                       # e.g. your Strimzi / MSK / Confluent bootstrap
+  DB_URL: "jdbc:mysql://mysql:3306/supplychain"       # e.g. your RDS / Cloud SQL endpoint
+  AGENTS_LLM_ENABLED: "false"
+  TOPIC_PARTITIONS: "3"
+  TOPIC_REPLICAS: "3"                                         # production Kafka normally needs 3

@@ -1,0 +1,144 @@
+{
+  "info": {
+    "name": "Agentic Supply Chain",
+    "description": "Run: docker compose up -d, then mvn spring-boot:run. Send 1 or 2, wait a second, then 3-5.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "decisionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Publish delay - SKU-1001, 5 days (medium, auto-executed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('202 Accepted', () => pm.response.to.have.status(202));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplierId\": \"SUP-A\",\n  \"sku\": \"SKU-1001\",\n  \"delayDays\": 5,\n  \"reason\": \"port congestion\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/events/supplier-delay",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "events", "supplier-delay"]
+        }
+      }
+    },
+    {
+      "name": "2. Publish delay - SKU-3003, 12 days (critical, needs approval)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('202 Accepted', () => pm.response.to.have.status(202));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplierId\": \"SUP-A\",\n  \"sku\": \"SKU-3003\",\n  \"delayDays\": 12,\n  \"reason\": \"customs hold\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/events/supplier-delay",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "events", "supplier-delay"]
+        }
+      }
+    },
+    {
+      "name": "3. All decisions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/decisions",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "decisions"]
+        }
+      }
+    },
+    {
+      "name": "4. Approval queue (saves first decisionId)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const list = pm.response.json();",
+              "if (list.length > 0) { pm.collectionVariables.set('decisionId', list[0].decisionId); }",
+              "pm.test('queue returned', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/approvals",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "approvals"]
+        }
+      }
+    },
+    {
+      "name": "5a. Approve",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/approvals/{{decisionId}}/approve",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "approvals", "{{decisionId}}", "approve"]
+        }
+      }
+    },
+    {
+      "name": "5b. Reject",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/approvals/{{decisionId}}/reject",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "approvals", "{{decisionId}}", "reject"]
+        }
+      }
+    },
+    {
+      "name": "6. Bad request (expects 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"supplierId\": \"SUP-A\",\n  \"sku\": \"\",\n  \"delayDays\": 0\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/events/supplier-delay",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "events", "supplier-delay"]
+        }
+      }
+    }
+  ]
+}

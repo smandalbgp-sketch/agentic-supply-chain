@@ -1,0 +1,15 @@
+# Apply everything with:  kubectl apply -k k8s/
+# Create the secret first (see secret.example.yaml).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+
+# Point at your pushed image without editing deployment.yaml:
+# images:
+#   - name: agentic-supply-chain
+#     newName: ghcr.io/you/agentic-supply-chain
+#     newTag: "0.0.1"

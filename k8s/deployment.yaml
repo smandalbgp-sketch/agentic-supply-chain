@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-supply-chain
+  namespace: supply-chain
+  labels:
+    app: agentic-supply-chain
+spec:
+  # Each instance joins the same Kafka consumer group, so Kafka splits the partitions between them.
+  # Replicas beyond TOPIC_PARTITIONS (3) will sit idle for consuming.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agentic-supply-chain
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: agentic-supply-chain
+    spec:
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: app
+          image: agentic-supply-chain:0.0.1      # replace with your registry path, e.g. ghcr.io/you/agentic-supply-chain:0.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: supply-chain-config
+            - secretRef:
+                name: supply-chain-secrets
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 768Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30                 # up to 150s to start
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp                    # Tomcat and the JVM need a writable temp dir
+      volumes:
+        - name: tmp
+          emptyDir: {}
